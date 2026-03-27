@@ -1,5 +1,5 @@
 use comfy_table::{Attribute, Cell, ContentArrangement, Table};
-use poiesis_core::{sections::Section, Post};
+use poiesis_core::{parse_heading_line, sections::Section, Post};
 
 /// Format a list of posts/pages as a table
 pub fn print_post_table(posts: &[Post], total: Option<u64>) {
@@ -60,20 +60,20 @@ pub fn print_heading_tree(post: &Post, sections: &[Section]) {
 
     print_sections_tree(
         sections,
-        0,
         sections.iter().map(|s| s.level).min().unwrap_or(1),
     );
 }
 
-fn print_sections_tree(sections: &[Section], _depth: usize, base_level: usize) {
+fn print_sections_tree(sections: &[Section], base_level: usize) {
     for (i, section) in sections.iter().enumerate() {
         let relative_depth = section.level.saturating_sub(base_level);
         let indent = "   ".repeat(relative_depth);
         let is_last = i == sections.len() - 1 || sections[i + 1].level <= section.level;
-
         let hashes = "#".repeat(section.level);
+
         if relative_depth == 0 {
-            println!("└─ {} {}", hashes, section.text);
+            let branch = if i == sections.len() - 1 { "└─" } else { "├─" };
+            println!("{}[{}] {} {}", branch, section.id, hashes, section.text);
         } else {
             let branch = if is_last { "└─" } else { "├─" };
             println!(
@@ -100,20 +100,4 @@ pub fn print_content_with_ids(markdown: &str, sections: &[Section]) {
             println!("{}", line);
         }
     }
-}
-
-fn parse_heading_line(line: &str) -> Option<(usize, String)> {
-    let trimmed = line.trim_start();
-    if !trimmed.starts_with('#') {
-        return None;
-    }
-    let hash_count = trimmed.chars().take_while(|&c| c == '#').count();
-    if hash_count > 6 {
-        return None;
-    }
-    let rest = &trimmed[hash_count..];
-    if !rest.starts_with(' ') && !rest.is_empty() {
-        return None;
-    }
-    Some((hash_count, rest.trim().to_string()))
 }

@@ -145,7 +145,7 @@ pub fn parse_sections(markdown: &str) -> Vec<Section> {
 }
 
 /// Parse a heading line, returning (level, text) or None
-fn parse_heading_line(line: &str) -> Option<(usize, String)> {
+pub fn parse_heading_line(line: &str) -> Option<(usize, String)> {
     let trimmed = line.trim_start();
     if !trimmed.starts_with('#') {
         return None;
@@ -178,7 +178,7 @@ fn assign_section_id(
     // Check for collision
     let collision = existing_sections
         .iter()
-        .any(|s| s.id == base_id || s.id.starts_with(&base_id));
+        .any(|s| s.id == base_id);
 
     if collision {
         // Use position-based disambiguation: append \x00{count} to input

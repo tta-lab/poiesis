@@ -9,18 +9,15 @@ use crate::{
 };
 
 /// WP REST API client. Does NOT derive Debug (auth header redacted manually).
-#[allow(dead_code)]
 pub struct WpClient {
     http: reqwest::Client,
     base_url: String,
-    auth_header: String,
 }
 
 impl std::fmt::Debug for WpClient {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("WpClient")
             .field("base_url", &self.base_url)
-            .field("auth_header", &"[REDACTED]")
             .finish()
     }
 }
@@ -59,13 +56,12 @@ impl WpClient {
         Ok(WpClient {
             http,
             base_url: format!("{}/wp-json/wp/v2", config.url),
-            auth_header,
         })
     }
 
     // --- Posts ---
 
-    pub async fn list_posts(&self, params: &ListParams) -> Result<Vec<Post>, PoiesisError> {
+    pub async fn list_posts(&self, params: &ListParams) -> Result<(Vec<Post>, Option<u64>), PoiesisError> {
         self.list("/posts", params).await
     }
 
@@ -87,7 +83,7 @@ impl WpClient {
 
     // --- Pages ---
 
-    pub async fn list_pages(&self, params: &ListParams) -> Result<Vec<Post>, PoiesisError> {
+    pub async fn list_pages(&self, params: &ListParams) -> Result<(Vec<Post>, Option<u64>), PoiesisError> {
         self.list("/pages", params).await
     }
 
@@ -109,7 +105,7 @@ impl WpClient {
 
     // --- Internal implementation ---
 
-    async fn list(&self, endpoint: &str, params: &ListParams) -> Result<Vec<Post>, PoiesisError> {
+    async fn list(&self, endpoint: &str, params: &ListParams) -> Result<(Vec<Post>, Option<u64>), PoiesisError> {
         let url = format!("{}{}", self.base_url, endpoint);
         let mut query: Vec<(&str, String)> = vec![("context", "edit".to_string())];
 
@@ -134,7 +130,39 @@ impl WpClient {
         }
 
         let resp = self.http.get(&url).query(&query).send().await?;
-        self.handle_response(resp).await
+        let status = resp.status();
+
+        // Extract total count from X-WP-Total header before consuming response
+        let total = resp
+            .headers()
+            .get("X-WP-Total")
+            .and_then(|v| v.to_str().ok())
+            .and_then(|s| s.parse::<u64>().ok());
+
+        if status.is_success() {
+            let posts: Vec<Post> = resp.json().await?;
+            return Ok((posts, total));
+        }
+
+        let body = resp.text().await.unwrap_or_default();
+        if let Ok(wp_err) = serde_json::from_str::<WpErrorResponse>(&body) {
+            let http_status = wp_err
+                .data
+                .as_ref()
+                .and_then(|d| d.status)
+                .unwrap_or(status.as_u16());
+            return Err(PoiesisError::WpApi {
+                code: wp_err.code,
+                message: wp_err.message,
+                status: http_status,
+            });
+        }
+
+        Err(PoiesisError::WpApi {
+            code: "unknown".to_string(),
+            message: format!("HTTP {}", status),
+            status: status.as_u16(),
+        })
     }
 
     async fn get(&self, endpoint: &str, id: u64) -> Result<Post, PoiesisError> {
@@ -300,7 +328,7 @@ mod tests {
             .await;
 
         let client = WpClient::new(&make_config(&server)).unwrap();
-        let posts = client.list_posts(&ListParams::default()).await.unwrap();
+        let (posts, _total) = client.list_posts(&ListParams::default()).await.unwrap();
         assert_eq!(posts.len(), 2);
         assert_eq!(posts[0].id, 1);
         assert_eq!(posts[1].title.raw, "Post Two");
@@ -396,7 +424,7 @@ mod tests {
             .await;
 
         let client = WpClient::new(&make_config(&server)).unwrap();
-        let pages = client.list_pages(&ListParams::default()).await.unwrap();
+        let (pages, _total) = client.list_pages(&ListParams::default()).await.unwrap();
         assert_eq!(pages.len(), 1);
         assert_eq!(pages[0].post_type, "page");
     }
@@ -474,6 +502,8 @@ mod tests {
         };
         let result = client.list_posts(&params).await;
         assert!(result.is_ok());
+        let (posts, _total) = result.unwrap();
+        let _ = posts;
     }
 
     #[test]

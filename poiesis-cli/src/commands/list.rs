@@ -22,20 +22,14 @@ pub async fn run(
     };
 
     let (posts, total) = match post_type.as_deref() {
-        Some("page") => {
-            let posts = client
-                .list_pages(&params)
-                .await
-                .unwrap_or_else(|e| fatal_err(&e));
-            (posts, None)
-        }
-        _ => {
-            let posts = client
-                .list_posts(&params)
-                .await
-                .unwrap_or_else(|e| fatal_err(&e));
-            (posts, None)
-        }
+        Some("page") => client
+            .list_pages(&params)
+            .await
+            .unwrap_or_else(|e| fatal_err(&e)),
+        _ => client
+            .list_posts(&params)
+            .await
+            .unwrap_or_else(|e| fatal_err(&e)),
     };
 
     print_post_table(&posts, total);

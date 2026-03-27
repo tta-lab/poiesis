@@ -1,4 +1,4 @@
-use poiesis_core::{parse_content, rebuild_sections, to_raw, Config, UpdateParams, WpClient};
+use poiesis_core::{markdown_to_raw_gutenberg, parse_content, Config, UpdateParams, WpClient};
 
 use crate::util::{fatal, fatal_err, try_read_stdin};
 
@@ -25,18 +25,16 @@ pub async fn run(id: &str) {
         ),
     };
 
-    let mut doc = parse_content(&post.content.raw);
+    let doc = parse_content(&post.content.raw);
 
-    // Append to end of document
-    let appended = if doc.markdown.is_empty() {
+    // Build combined markdown and regenerate fresh Gutenberg blocks
+    let combined = if doc.markdown.is_empty() {
         content.trim().to_string()
     } else {
         format!("{}\n\n{}", doc.markdown.trim_end(), content.trim())
     };
-    doc.markdown = appended;
-    rebuild_sections(&mut doc);
 
-    let new_raw = to_raw(&doc);
+    let new_raw = markdown_to_raw_gutenberg(&combined);
     let params = UpdateParams {
         content: Some(new_raw),
         ..Default::default()

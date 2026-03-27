@@ -1,4 +1,7 @@
-use poiesis_core::{parse_content, sections, to_raw, Config, PostStatus, UpdateParams, WpClient};
+use poiesis_core::{
+    markdown_to_raw_gutenberg, parse_content, sections, to_raw, Config, PostStatus, UpdateParams,
+    WpClient,
+};
 
 use crate::util::{fatal, fatal_err, try_read_stdin};
 
@@ -34,20 +37,15 @@ pub async fn run(
                 fatal("stdin content is empty — cannot modify section with empty content");
             }
             None
-        } else {
-            // Modify content
+        } else if let Some(sid) = &section {
+            // Section-level replace: map edit back through original block structure
             let mut doc = parse_content(&post.content.raw);
-
-            if let Some(sid) = &section {
-                // Section-level replace
-                sections::replace_section(&mut doc, sid, md_input.trim())
-                    .unwrap_or_else(|e| fatal_err(&e));
-            } else {
-                // Replace full content
-                doc.markdown = md_input.trim().to_string();
-            }
-
+            sections::replace_section(&mut doc, sid, md_input.trim())
+                .unwrap_or_else(|e| fatal_err(&e));
             Some(to_raw(&doc))
+        } else {
+            // Full content replace: generate fresh Gutenberg blocks from new markdown
+            Some(markdown_to_raw_gutenberg(md_input.trim()))
         }
     } else {
         if section.is_some() {

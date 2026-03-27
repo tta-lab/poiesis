@@ -43,7 +43,6 @@ fn parse_blocks_from(input: &str) -> Vec<Block> {
 
     let mut blocks = Vec::new();
     let mut pos = 0;
-    let _bytes = input.as_bytes();
 
     while pos < input.len() {
         // Find next block comment
@@ -87,13 +86,7 @@ fn parse_blocks_from(input: &str) -> Vec<Block> {
                     let inner_blocks = parse_blocks_from(inner_raw);
                     // If inner blocks exist, inner_html is the full raw inner content
                     // If no sub-blocks, inner_html is just the raw HTML
-                    let inner_html = if inner_blocks.iter().any(|b| !b.is_freeform) {
-                        // Has nested blocks — keep raw for serialization
-                        inner_raw.to_string()
-                    } else {
-                        // Pure HTML content
-                        inner_raw.to_string()
-                    };
+                    let inner_html = inner_raw.to_string();
 
                     blocks.push(Block {
                         block_type,

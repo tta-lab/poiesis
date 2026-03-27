@@ -1,5 +1,4 @@
-use poiesis_core::markdown::markdown_to_html;
-use poiesis_core::{Config, CreateParams, PostStatus, WpClient};
+use poiesis_core::{markdown_to_raw_gutenberg, Config, CreateParams, PostStatus, WpClient};
 
 use crate::util::{fatal, fatal_err, try_read_stdin};
 
@@ -25,10 +24,8 @@ pub async fn run(title: Option<String>, post_type: Option<String>, status: Optio
         extract_title_and_content(&markdown)
     };
 
-    // Convert markdown to HTML
-    let html = markdown_to_html(&content_md);
-    // Wrap in a paragraph block
-    let raw_content = format!("<!-- wp:paragraph -->{html}<!-- /wp:paragraph -->");
+    // Convert markdown to proper Gutenberg blocks (heading → wp:heading, paragraph → wp:paragraph, etc.)
+    let raw_content = markdown_to_raw_gutenberg(&content_md);
 
     let params = CreateParams {
         title,
