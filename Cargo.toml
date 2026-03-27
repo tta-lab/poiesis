@@ -1,0 +1,3 @@
+[workspace]
+members = ["poiesis-core", "poiesis-cli"]
+resolver = "2"

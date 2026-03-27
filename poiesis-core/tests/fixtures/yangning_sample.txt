@@ -1,0 +1,6 @@
+<!-- wp:heading {"level":2} --><h2>经典讲义 Overview</h2><!-- /wp:heading -->
+<!-- wp:paragraph --><p>这些被称为经典讲义的著作，通常是指对佛教核心经文的深度解析与阐释。</p><!-- /wp:paragraph -->
+<!-- wp:heading {"level":2} --><h2>为什么会有讲义</h2><!-- /wp:heading -->
+<!-- wp:paragraph --><p>由于这些经文成书年代久远，文字晦涩难懂，所以产生了大量的讲义来帮助理解。</p><!-- /wp:paragraph -->
+<!-- wp:separator /-->
+<!-- wp:paragraph --><p>更多信息请参考<a href="https://yangning.org">杨宁网站</a>。</p><!-- /wp:paragraph -->

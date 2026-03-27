@@ -1,0 +1,25 @@
+[package]
+name = "poiesis-cli"
+version = "0.1.0"
+edition = "2021"
+description = "CLI for Poiesis WordPress content management"
+license = "MIT"
+default-run = "poi"
+
+[[bin]]
+name = "poi"
+path = "src/main.rs"
+
+[dependencies]
+poiesis-core = { path = "../poiesis-core" }
+clap = { version = "4", features = ["derive"] }
+tokio = { version = "1", features = ["rt-multi-thread", "macros"] }
+comfy-table = "7"
+colored = "3"
+serde_json = "1"
+
+[dev-dependencies]
+assert_cmd = "2"
+predicates = "3"
+wiremock = "0.6"
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "test-util"] }
