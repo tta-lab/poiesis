@@ -556,7 +556,7 @@ mod tests {
 
     #[test]
     fn test_find_section_not_found() {
-        let mut doc = ContentDocument {
+        let doc = ContentDocument {
             markdown: "## Hello\n\nWorld.".to_string(),
             sections: parse_sections("## Hello\n\nWorld."),
             blocks: vec![],
