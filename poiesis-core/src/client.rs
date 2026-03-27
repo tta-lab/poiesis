@@ -61,7 +61,10 @@ impl WpClient {
 
     // --- Posts ---
 
-    pub async fn list_posts(&self, params: &ListParams) -> Result<(Vec<Post>, Option<u64>), PoiesisError> {
+    pub async fn list_posts(
+        &self,
+        params: &ListParams,
+    ) -> Result<(Vec<Post>, Option<u64>), PoiesisError> {
         self.list("/posts", params).await
     }
 
@@ -83,7 +86,10 @@ impl WpClient {
 
     // --- Pages ---
 
-    pub async fn list_pages(&self, params: &ListParams) -> Result<(Vec<Post>, Option<u64>), PoiesisError> {
+    pub async fn list_pages(
+        &self,
+        params: &ListParams,
+    ) -> Result<(Vec<Post>, Option<u64>), PoiesisError> {
         self.list("/pages", params).await
     }
 
@@ -105,7 +111,11 @@ impl WpClient {
 
     // --- Internal implementation ---
 
-    async fn list(&self, endpoint: &str, params: &ListParams) -> Result<(Vec<Post>, Option<u64>), PoiesisError> {
+    async fn list(
+        &self,
+        endpoint: &str,
+        params: &ListParams,
+    ) -> Result<(Vec<Post>, Option<u64>), PoiesisError> {
         let url = format!("{}{}", self.base_url, endpoint);
         let mut query: Vec<(&str, String)> = vec![("context", "edit".to_string())];
 

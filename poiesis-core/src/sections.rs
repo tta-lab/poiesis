@@ -176,9 +176,7 @@ fn assign_section_id(
     let base_id = hash_to_base62(text, 2);
 
     // Check for collision
-    let collision = existing_sections
-        .iter()
-        .any(|s| s.id == base_id);
+    let collision = existing_sections.iter().any(|s| s.id == base_id);
 
     if collision {
         // Use position-based disambiguation: append \x00{count} to input
