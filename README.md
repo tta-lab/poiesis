@@ -38,6 +38,21 @@ poi list --search "keyword"        # search
 poi list --per-page 50             # more results
 ```
 
+### Find posts and pages
+
+```bash
+poi find "keyword"                       # WP-side search by title/content
+poi find "keyword" --type page           # search pages
+poi find "keyword" --status draft        # filter by status
+
+poi find --slug "-51634-"                # client-side filter on slug substring
+poi find "佛说" --slug "-51574-"          # narrow with query first, then slug filter
+```
+
+`--slug` performs a client-side scan (WP REST has no native slug-substring filter),
+paginating up to 1000 posts. Combine with a positional query to narrow the scan
+on larger sites.
+
 ### View content
 
 ```bash
@@ -62,6 +77,7 @@ cat updated.md | poi modify 42
 # Metadata only
 poi modify 42 --status publish
 poi modify 42 --title "New Title"
+poi modify 42 --slug "new-slug"
 poi modify 42 --status draft --title "WIP"
 ```
 
@@ -81,9 +97,9 @@ echo "# About\n\nWe are..." | poi create --type page --status publish
 ### Section operations
 
 ```bash
-# Insert before/after section
-echo "## New Section\n\nContent." | poi insert 42 --before Fb
-echo "## New Section\n\nContent." | poi insert 42 --after Fb
+# Insert before/after section (--section is required, --before/--after picks position)
+echo "## New Section\n\nContent." | poi insert 42 --section Fb --before
+echo "## New Section\n\nContent." | poi insert 42 --section Fb --after
 
 # Append to end
 echo "## Final Notes\n\nFinal content." | poi append 42
