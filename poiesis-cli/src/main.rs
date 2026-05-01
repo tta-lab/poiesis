@@ -45,6 +45,28 @@ enum Command {
         page: Option<u32>,
     },
 
+    /// Find posts or pages by search query or slug substring
+    Find {
+        /// Search query (matches title and content via WP REST)
+        query: Option<String>,
+
+        /// Slug substring to match (client-side filter; paginates up to 1000 posts)
+        #[arg(long, value_name = "SUBSTRING", allow_hyphen_values = true)]
+        slug: Option<String>,
+
+        /// Content type: post or page
+        #[arg(long, value_name = "TYPE")]
+        r#type: Option<String>,
+
+        /// Filter by status: draft, publish, pending, private
+        #[arg(long)]
+        status: Option<String>,
+
+        /// Results per page (default: 20; ignored when --slug is set)
+        #[arg(long, value_name = "N")]
+        per_page: Option<u32>,
+    },
+
     /// Show post details and content
     Detail {
         /// Post or page ID
@@ -175,6 +197,15 @@ async fn main() {
             page,
         } => {
             commands::list::run(r#type, status, search, per_page, page).await;
+        }
+        Command::Find {
+            query,
+            slug,
+            r#type,
+            status,
+            per_page,
+        } => {
+            commands::find::run(query, slug, r#type, status, per_page).await;
         }
         Command::Detail {
             id,
