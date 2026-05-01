@@ -72,7 +72,11 @@ fn print_sections_tree(sections: &[Section], base_level: usize) {
         let hashes = "#".repeat(section.level);
 
         if relative_depth == 0 {
-            let branch = if i == sections.len() - 1 { "└─" } else { "├─" };
+            let branch = if i == sections.len() - 1 {
+                "└─"
+            } else {
+                "├─"
+            };
             println!("{}[{}] {} {}", branch, section.id, hashes, section.text);
         } else {
             let branch = if is_last { "└─" } else { "├─" };
