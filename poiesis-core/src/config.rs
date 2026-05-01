@@ -49,10 +49,11 @@ impl Config {
 }
 
 pub fn config_path() -> PathBuf {
-    dirs::config_dir()
-        .unwrap_or_else(|| PathBuf::from("~/.config"))
-        .join("poiesis")
-        .join("config.toml")
+    let home = dirs::home_dir().unwrap_or_else(|| PathBuf::from("~"));
+    let config_dir = std::env::var("XDG_CONFIG_HOME")
+        .map(PathBuf::from)
+        .unwrap_or_else(|_| home.join(".config"));
+    config_dir.join("poiesis").join("config.toml")
 }
 
 #[cfg(test)]
